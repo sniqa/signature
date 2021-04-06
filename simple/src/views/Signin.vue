@@ -1,5 +1,8 @@
 <template>
   <div class="signin-page">
+
+		<h1>{{ subject }}</h1>
+
 		<label for="">请输入姓名：</label>
 		<input type="text" name="" id=""
 			@change.prevent="onChange"
@@ -20,7 +23,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 
 import Signature from '../components/Signature.vue'
 
@@ -28,7 +31,9 @@ import wsServer, { commitURL } from '../common/ws'
 
 import { uid } from '../common/utils'
 
-import { titleID } from './Create.vue'
+import { Person } from './Show.vue'
+
+import { subjectID, subject } from '../common/config'
 
 export default defineComponent({
   name: 'Signin',
@@ -37,10 +42,17 @@ export default defineComponent({
   },
 	setup() {
 
+ console.log('config', subject.value);
+	watch(() => subject.value, () => {
+  console.log('config', subject.value);
+  
+})
+
+
 		//获取输入框的值
-		const inputVal = ref('')
+		const personName = ref('')
 		const onChange = (e) => {
-			inputVal.value = e.target.value
+			personName.value = e.target.value
 		}
 
 		//创建websocket客户端
@@ -56,7 +68,7 @@ export default defineComponent({
 		}	
 
 		//生成唯一id，在不关闭网页的时候可使用该id来修改
-		const id = uid()
+		const personID = uid()
 
 		//将Signature组件的canvasCommit方法提取出来给父组件使用
 		let commitFn: () => string | boolean
@@ -65,7 +77,7 @@ export default defineComponent({
 		}	
 		const commit = () => {
 			const res = commitFn()
-			if(inputVal.value.trim() === ''){
+			if(personName.value.trim() === ''){
 				alert('需要输入姓名')
 				return
 			}
@@ -74,15 +86,19 @@ export default defineComponent({
 				return
 			}
 
-			ws.send(JSON.stringify({
-				id,
-				title: inputVal.value,
-				signature: res
-			}))
+			const data: Person = {
+				subjectID: subjectID.value,
+				personID,
+				person: personName.value,
+				signature: res as string,
+				created: new Date().toLocaleString()
+			}
+
+			ws.send(JSON.stringify(data))
 			alert('签到成功')
 		}
 
-		return { canvasReset, canvasCommit, reset, commit, onChange }
+		return { canvasReset, canvasCommit, reset, commit, onChange, subject }
 	}
 })
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="show-signatrues">
       <button @click="returnCreate">
-				返回二維碼界面
+				返回二维码界面
 			</button>
 
 			<CheckedIn 
@@ -18,21 +18,23 @@
 import { defineComponent, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
+import Button from '../components/Button.vue'
+
 import CheckedIn from '../components/CheckedIn.vue'
 
 import wsServer, { memberURL } from '../common/ws'
 
+import { PersonInfos } from '../common/indexedDB'
 
-interface Data {
-  id: string
-  title: string
-  signature: string
+export interface Person extends PersonInfos {
+  personID: string
 }
 
 export default defineComponent({
   name: 'Show',
   components: {
-		CheckedIn
+		CheckedIn,
+    Button
   },
   setup(){
 		const router = useRouter()
@@ -41,14 +43,14 @@ export default defineComponent({
 			router.push('/main/create')
 		}
 
-		const data = reactive<Array<Data>>([]) 
+		const data = reactive<Array<Person>>([]) 
 
 		const ws = wsServer(memberURL)
 
 		ws.onmessage = (e) => {
       const newData = JSON.parse(e.data)
       for(let i = 0, len = data.length; i < len; i++){
-        if(data[i].id === newData.id || data[i].title === newData.title){
+        if(data[i].personID === newData.personID || data[i].person === newData.person){
           data[i] = newData
           return
         }
@@ -62,5 +64,7 @@ export default defineComponent({
 </script>
 
 <style>
+/* .show-signatrues > button {
 
+} */
 </style>

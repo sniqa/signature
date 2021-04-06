@@ -7,7 +7,7 @@
 				<button id="account" 
 					class="main-page-header-account-login"
 					@click="accountClick"	
-				>{{ account }}</button>
+				>{{ adminAccount }}</button>
 				<button 
 					class="main-page-header-account-logout"
 					@click.prevent="logout"
@@ -39,10 +39,12 @@
 </template>
 
 <script lang='ts'>
-import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import { defineComponent, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { account } from './Login.vue'
+import { adminAccount, subjectID } from '../common/config'
+
+import { uid } from '../common/utils'
 
 export default defineComponent({
   name: 'Main',
@@ -58,6 +60,7 @@ export default defineComponent({
 		})
 
 		const create = () => {
+			subjectID.value = uid()
 			router.push('/main/create')
 		}
 
@@ -69,18 +72,18 @@ export default defineComponent({
 			state.isShowLogout = !state.isShowLogout
 		}
 
-	
 
 
 		const logoutRef = ref<HTMLElement>(null)
 		const accountRef = ref<HTMLElement>(null)
 
 	
-
 		//注销操作
 		const logout = (e: MouseEvent) => {
 			if(e.target === logoutRef.value){
-				console.log('注销');
+				adminAccount.value = ''
+				window.removeEventListener('click', logoutBtn)
+				router.push('/login')
 			}
 			return
 		}
@@ -103,7 +106,7 @@ export default defineComponent({
 		})
 
 
-		return { account, state, create, history, accountClick, logout, accountRef, logoutRef }
+		return { adminAccount, state, create, history, accountClick, logout, accountRef, logoutRef }
 	}
 })
 </script>

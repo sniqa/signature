@@ -27,17 +27,19 @@ export default defineComponent({
 <style>
 button.button {
   cursor: pointer;
-  color: #fff;
   padding: 6px 15px;
-  border: 0;
   border-radius: 25px;
   outline: none;
   text-indent: 5px;
   letter-spacing: 5px;
-  text-align: justify;
-  text-align-last: justify;
   width: inherit;
   box-sizing: border-box;
-  background-color: rgb(54, 100, 224);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  background-color: var(--color-primary);
+}
+button.button:hover {
+  color: var(--color-primary);
+  background-color: var(--primary);
 }
 </style>

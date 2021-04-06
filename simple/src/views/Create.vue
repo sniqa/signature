@@ -3,15 +3,15 @@
 
 		<!-- 写入标题 -->
 		<section class="create-page-operate"
-			v-if="state.isCreateTitle"
+			v-if="state.isCreateSubject"
 		>
 			<input type="text" name="" id=""
-				:value="state.titleValue"
-				@change="createTitle"
-				placeholder="点击添加标题"
+				:value="subject"
+				@change="createSuject"
+				placeholder="点击添加主题"
 			>
 
-			<button @click="titleBtn">确定</button>
+			<button @click="subjectBtn">确定</button>
 		</section>
 
 		<!-- 显示二维码 -->
@@ -21,14 +21,18 @@
 
 			<div class="show-title">
 				<span>标题: </span>
-				<span class="convansation-title">{{ state.titleValue }} </span>
-				<button @click="changeTitle">修改</button>
+				<span class="convansation-title">{{ subject }} </span>
+				<button @click="state.isCreateSubject = true">修改</button>
 			</div>
 			
 			<div class="show-qrcode">
 				<div class="show-qrcode-wifi">
 					<h2>第一步: &nbsp;&nbsp;&nbsp;加入局域网WIFI</h2>
-					<QRcode :size="500"></QRcode>
+					<QRcode 
+						:size="500"
+						msg="hello"
+					></QRcode>
+
 					<h2>或者</h2>
 					<h3>搜索WiFi加入:</h3>
 					<p>WiFi账号：{{ wifi.account }}</p>
@@ -37,7 +41,10 @@
 
 				<div class="show-qrcode-signature">
 					<h2>第二步:&nbsp;&nbsp;&nbsp;进行签到</h2>
-					<QRcode :size="500"></QRcode>
+					<QRcode 
+						:size="500"
+						:msg="qrcodePageUrl"
+					></QRcode>
 
 					<div class="show-signature-btn">
 						<button @click="goSignature">显示已签到</button>
@@ -51,18 +58,19 @@
 </template>
 
 <script lang='ts'>
-import { computed, defineComponent, reactive } from 'vue'
+import { computed, defineComponent, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import QRcode from '../components/QRcode.vue'
 
-import { uid } from '../common/utils'
-import { account } from './Login.vue'
+import { subjectID, 
+				 adminAccount, 
+				 wifiAccount, 
+				 wifiPasswd, 
+				 qrcodePageUrl, 
+				 subject } from '../common/config'
 
-import request, { Subject } from '../common/indexedDB'
-
-//该界面的唯一id
-export const titleID = computed(() => uid())
+import request, { Subjects } from '../common/indexedDB'
 
 export default defineComponent({
   name: 'Create',
@@ -71,8 +79,12 @@ export default defineComponent({
   },
 	setup(){
 		const state = reactive({
-			isCreateTitle: true,
-			titleValue: ''
+			isCreateSubject: true,
+		})
+
+		watch(() => subject.value, () => {
+			console.log(subject.value);
+			
 		})
 
 		const wifi = reactive({
@@ -82,6 +94,7 @@ export default defineComponent({
 
 		const router = useRouter()
 
+		//indexedDB
 		let db: IDBDatabase
 		request.onsuccess = function() {
   		db = request.result
@@ -89,11 +102,9 @@ export default defineComponent({
 			
 		}
 
-
-
 		//新建标题
-		const titleBtn = () => {
-			if(state.titleValue === ''){
+		const subjectBtn = () => {
+			if(subject.value === ''){
 				alert('标题不能为空')
 				return
 			}
@@ -101,32 +112,31 @@ export default defineComponent({
 			const tx = db.transaction("Subject", "readwrite");
 			const store = tx.objectStore("Subject");
 
-			const data: Subject = {
-				title: state.titleValue,
-				id: titleID.value,			//id为唯一值，不刷新界面就不会改变
+			const data: Subjects = {
+				subject: subject.value,
+				subjectID: subjectID.value,			//id为唯一值，不点击新建签到不会刷新
 				created: new Date().toLocaleString(),
-				owner: account.value
+				owner: adminAccount.value
 			}
 
 			store.put(data)
 			
-			state.isCreateTitle = false
+			state.isCreateSubject = false
 		}
 
-		const createTitle = (e: KeyboardEvent) => {
-			state.titleValue = (e.target as HTMLInputElement).value
+		const createSuject = (e: KeyboardEvent) => {
+			subject.value = (e.target as HTMLInputElement).value
 		}
 
-		const changeTitle = () => {
-			state.isCreateTitle = true
-		}
 
 		const goSignature = () => {
 			router.push('/main/show')
 		}
 
-		return  { state, titleBtn, changeTitle, createTitle, wifi, goSignature }
+		return  { state, subjectBtn, createSuject, wifi, goSignature, qrcodePageUrl, subject }
 	}
+
+
 })
 </script>
 

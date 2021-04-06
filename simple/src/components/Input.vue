@@ -1,7 +1,7 @@
 <template>
   <div class="input-area">
     <label :for="id" class="input-label" v-if="title">{{ title }}</label>
-    <input type="text"
+    <input 
       v-bind="$attrs"
       class="input"
       :id="id" 
@@ -35,7 +35,7 @@ export default defineComponent({
 
 <style>
 .input-area {
-  margin: 10px;
+  margin: 20px 0;
 }
 
 .input-label {
@@ -44,31 +44,30 @@ export default defineComponent({
   text-align: justify;
   text-align-last: justify;
   margin: 6px 5px 6px 0px;
-  color: rgb(32, 72, 182);
+  color: var(--primary);
 }
 
 input.input {
-  margin: 0 10px;
   padding: 0 10px;
   box-sizing: border-box;
   height: 30px;
-  width: 220px;
+  width: 100%;
   border-radius: 25px;
-  border: 1px solid rgb(32, 72, 182);
-  color: rgb(32, 72, 182);
+  border: 1px solid var(--primary);
+  color: var(--primary);
   outline: none;
 }
 input::-webkit-input-placeholder{
-  color: rgb(32, 72, 182);
+  color: var(--primary);
 }
 input::-moz-placeholder{   /* Mozilla Firefox 19+ */
-  color: rgb(32, 72, 182);
+  color: var(--primary);
 }
 input:-moz-placeholder{    /* Mozilla Firefox 4 to 18 */
-  color: rgb(32, 72, 182);
+  color: var(--primary);
 }
 input:-ms-input-placeholder{  /* Internet Explorer 10-11 */ 
-  color: rgb(32, 72, 182);
+  color: var(--primary);
 }
 
 </style>
