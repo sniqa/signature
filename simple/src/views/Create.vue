@@ -58,17 +58,16 @@
 </template>
 
 <script lang='ts'>
-import { computed, defineComponent, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, defineComponent, reactive, Ref, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import QRcode from '../components/QRcode.vue'
 
 import { subjectID, 
 				 adminAccount, 
 				 wifiAccount, 
-				 wifiPasswd, 
-				 qrcodePageUrl, 
-				 subject } from '../common/config'
+				 wifiPasswd,
+				 str_encrypt } from '../common/config'
 
 import request, { Subjects } from '../common/indexedDB'
 
@@ -82,17 +81,14 @@ export default defineComponent({
 			isCreateSubject: true,
 		})
 
-		watch(() => subject.value, () => {
-			console.log(subject.value);
-			
-		})
-
 		const wifi = reactive({
 			account: '',
 			passwd: ''
 		})
 
 		const router = useRouter()
+
+		const subject = ref('')
 
 		//indexedDB
 		let db: IDBDatabase
@@ -102,6 +98,8 @@ export default defineComponent({
 			
 		}
 
+		
+
 		//新建标题
 		const subjectBtn = () => {
 			if(subject.value === ''){
@@ -110,7 +108,7 @@ export default defineComponent({
 			}
 
 			const tx = db.transaction("Subject", "readwrite");
-			const store = tx.objectStore("Subject");
+			const indexedDBStore = tx.objectStore("Subject");
 
 			const data: Subjects = {
 				subject: subject.value,
@@ -119,7 +117,7 @@ export default defineComponent({
 				owner: adminAccount.value
 			}
 
-			store.put(data)
+			indexedDBStore.put(data)
 			
 			state.isCreateSubject = false
 		}
@@ -132,6 +130,19 @@ export default defineComponent({
 		const goSignature = () => {
 			router.push('/main/show')
 		}
+
+
+		
+		let qrcodePageUrl = ref('')
+		const origin = window.location.origin + '/signin/'
+		watch(() => subject.value, () => {
+			qrcodePageUrl.value = origin + str_encrypt(subject.value)
+			console.log(qrcodePageUrl.value);
+		})
+	
+		
+
+		
 
 		return  { state, subjectBtn, createSuject, wifi, goSignature, qrcodePageUrl, subject }
 	}

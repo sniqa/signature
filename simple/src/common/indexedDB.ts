@@ -43,20 +43,20 @@ request.onerror = function () {
 	console.log('打开数据库失败')
 }
 
-const dbSearch = (db: IDBDatabase, 
-		dbStore: string,
-		dbIndex: string,
-		dbValue: string,
-		onsuccess: (e: Event) => void
-	) => {
+// const dbSearch = (db: IDBDatabase, 
+// 		dbStore: string,
+// 		dbIndex: string,
+// 		dbValue: string,
+// 		onsuccess: (e: Event) => void
+// 	) => {
 
-		const tx = db.transaction(dbStore, "readonly");
-		const store = tx.objectStore(dbStore);
-		const index = store.index(dbIndex);
+// 		const tx = db.transaction(dbStore, "readonly");
+// 		const store = tx.objectStore(dbStore);
+// 		const index = store.index(dbIndex);
 
-		const request = index.get(dbValue);
-		request.onsuccess = onsuccess
-}
+// 		const request = index.get(dbValue);
+// 		request.onsuccess = onsuccess
+// }
 
 
 export default request

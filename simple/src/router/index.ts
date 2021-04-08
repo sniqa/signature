@@ -5,7 +5,7 @@ import { adminAccount } from '../common/config'
 const routes: Array<RouteRecordRaw> = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: () => import('../views/Login.vue') },
-  { path: '/signin', component: () => import('../views/Signin.vue') },
+  { path: '/signin/:id', component: () => import('../views/Signin.vue') },
   { 
     path: '/main', 
     component: () => import('../views/Main.vue'),
@@ -35,7 +35,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   
-  if (to.path === '/signin') {
+  if (to.path.includes('/signin')) {
     next()
     return
   }

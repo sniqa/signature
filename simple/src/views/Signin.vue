@@ -23,7 +23,9 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+
+import { useRoute } from 'vue-router'
 
 import Signature from '../components/Signature.vue'
 
@@ -33,7 +35,7 @@ import { uid } from '../common/utils'
 
 import { Person } from './Show.vue'
 
-import { subjectID, subject } from '../common/config'
+import { str_decrypt } from '../common/config'
 
 export default defineComponent({
   name: 'Signin',
@@ -42,13 +44,16 @@ export default defineComponent({
   },
 	setup() {
 
- console.log('config', subject.value);
-	watch(() => subject.value, () => {
-  console.log('config', subject.value);
-  
-})
+		const router = useRoute()
 
 
+		const subjectID = (router.params.id as string)
+		console.log(subjectID);
+		
+		const subject = ref(str_decrypt(subjectID)) 
+		console.log('subject', subject);
+		
+		
 		//获取输入框的值
 		const personName = ref('')
 		const onChange = (e) => {
@@ -67,9 +72,7 @@ export default defineComponent({
 			resetFn()
 		}	
 
-		//生成唯一id，在不关闭网页的时候可使用该id来修改
-		const personID = uid()
-
+		
 		//将Signature组件的canvasCommit方法提取出来给父组件使用
 		let commitFn: () => string | boolean
 		const canvasCommit = (fn: () => string | boolean) => {
@@ -87,8 +90,8 @@ export default defineComponent({
 			}
 
 			const data: Person = {
-				subjectID: subjectID.value,
-				personID,
+				subjectID: subjectID,
+				personID: uid(), //生成唯一id，在不关闭网页的时候可使用该id来修改
 				person: personName.value,
 				signature: res as string,
 				created: new Date().toLocaleString()
