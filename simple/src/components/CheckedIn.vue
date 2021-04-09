@@ -1,5 +1,5 @@
 <template>
-  <div class="CheckedIn-content">
+  <div class="checkedin-content">
     <p class="person">{{ title }}</p>
 			<img :src="signature" alt="" class="signature">
   </div>
@@ -20,12 +20,14 @@ export default defineComponent({
 </script>
 
 <style>
-.CheckedIn-content {
-	display: flex;
+.checkedin-content {
+	margin: 10px;
+	display: inline-flex;
+	/* flex-grow: 1; */
 	border: 1px solid #000;
 	width: 300px;
 }
-.CheckedIn-content p.person {
+.checkedin-content p.person {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
@@ -33,7 +35,7 @@ export default defineComponent({
 	margin: 0;
 	border-right: 1px solid #000;
 }
-.CheckedIn-content > .signature {
+.checkedin-content > .signature {
 	flex-grow: 1;
 	height: 120px;
 	width: 200px;

@@ -42,7 +42,9 @@
 import { defineComponent, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { adminAccount, subjectID } from '../common/config'
+import { useStore } from '../store'
+
+import { adminAccount } from '../common/config'
 
 import { uid } from '../common/utils'
 
@@ -53,6 +55,7 @@ export default defineComponent({
 	setup(){
 
 		const router = useRouter()
+		const store = useStore()
 
 		const state = reactive({
 			isShowLogout: false,
@@ -60,7 +63,7 @@ export default defineComponent({
 		})
 
 		const create = () => {
-			subjectID.value = uid()
+			store.commit('setSubjectID', uid())
 			router.push('/main/create')
 		}
 

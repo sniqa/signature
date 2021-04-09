@@ -33,9 +33,10 @@ import wsServer, { commitURL } from '../common/ws'
 
 import { uid } from '../common/utils'
 
-import { Person } from './Show.vue'
+import { PersonState } from '../store'
 
 import { str_decrypt } from '../common/config'
+
 
 export default defineComponent({
   name: 'Signin',
@@ -45,15 +46,13 @@ export default defineComponent({
 	setup() {
 
 		const router = useRoute()
+		 
+		const subjectID = (router.params.subjectID as string)
+		
+		const subject = ref(str_decrypt((router.params.subject as string))) 
+		
+		const personID = uid()		//生成唯一id，在不关闭网页的时候可使用该id来修改
 
-
-		const subjectID = (router.params.id as string)
-		console.log(subjectID);
-		
-		const subject = ref(str_decrypt(subjectID)) 
-		console.log('subject', subject);
-		
-		
 		//获取输入框的值
 		const personName = ref('')
 		const onChange = (e) => {
@@ -89,9 +88,9 @@ export default defineComponent({
 				return
 			}
 
-			const data: Person = {
-				subjectID: subjectID,
-				personID: uid(), //生成唯一id，在不关闭网页的时候可使用该id来修改
+			const data: PersonState = {
+				subjectID,
+				personID, 
 				person: personName.value,
 				signature: res as string,
 				created: new Date().toLocaleString()
@@ -111,7 +110,16 @@ export default defineComponent({
 	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
-	/* margin: 50px 10px; */
+	box-sizing: border-box;
+	margin: 10px;
+}
+.signin-page > h1 {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	padding: 10px;
+	box-sizing: border-box;
 }
 .signin-page > input {
 	padding: 0 15px;
@@ -133,12 +141,12 @@ export default defineComponent({
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
-	height: 100px;
+	margin: 10px;
 }
 
 .control-area > button {
  	border: 1px solid rgb(37, 97, 175);
-	padding: 12px 5%;
+	padding: 12px 50px;
 	border-radius: 5px;
 	outline: none;
 	cursor: pointer;

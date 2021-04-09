@@ -28,7 +28,7 @@ export default defineComponent({
   emits: ['canvasReset', 'canvasCommit'],
 	setup(props, ctx) {
 
-		const canvas: CanvasData ={
+		const canvas: CanvasData = {
 			isDraw: false,
 			prevX: 0,
 			prevY: 0
@@ -165,8 +165,8 @@ export default defineComponent({
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-width: 450px;
-	min-height: 400px;
+	/* min-width: 450px; */
+	/* min-height: 400px; */
 }
 .canvas {
 	border: 1px solid rgb(37, 97, 175);

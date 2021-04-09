@@ -33,13 +33,16 @@
 </template>
   
 <script lang='ts'>
-import { computed, defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
 import Input from '../components/Input.vue'
 import Button from '../components/Button.vue'
 
 import { adminAccount } from '../common/config'
+
+import request from '../common/indexedDB'
+import store from '../store'
 
 export default defineComponent({
   name: 'Login',
@@ -60,6 +63,14 @@ export default defineComponent({
       isLogin: true
     })
     
+    	//indexedDB
+      request.onsuccess = function() {
+        const db = request.result
+        store.commit('setIndexedDB', db)
+        console.log('链接数据库成功');
+        
+      }
+
     const loginClick = () => {
       const account = window.localStorage.getItem(getAccountKey(loginData.account))
       const passwd = window.localStorage.getItem(getPasswdKey(loginData.account))
@@ -77,6 +88,7 @@ export default defineComponent({
       window.localStorage.setItem(prevAccountKey, loginData.account)
       window.localStorage.setItem(prevPasswd, loginData.passwd)
       adminAccount.value = loginData.account
+
       router.push('/main')
       
     }

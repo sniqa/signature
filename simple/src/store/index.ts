@@ -1,21 +1,34 @@
-
-interface State {
-  subject: string
-}
-
 import { InjectionKey } from 'vue'
 import { createStore, useStore as baseUseStore, Store } from 'vuex'
 
+import { PersonInfos } from '../common/indexedDB'
 
-export const key: InjectionKey<Store<State>> = Symbol()
+export interface PersonState extends PersonInfos {
+  personID: string
+}
 
-export const store = createStore<State>({
+interface Persons {
+  subjectID: string,
+  indexedDB: IDBDatabase | null
+  persons: Array<PersonState>
+}
+export const key: InjectionKey<Store<Persons>> = Symbol()
+
+export const store = createStore<Persons>({
   state: {
-    subject: ''
+    subjectID: '',
+    indexedDB: null,
+    persons: []
   },
   mutations: {
-    setSubject: (state, payload) => {
-      state.subject = payload
+    setPersons: (state, payload: Array<PersonState>) => {
+      state.persons = payload
+    },
+    setSubjectID: (state, payload: string) => {
+      state.subjectID = payload
+    },
+    setIndexedDB: (state, payload: IDBDatabase) => {
+      state.indexedDB = payload
     }
   }
 })

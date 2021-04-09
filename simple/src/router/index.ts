@@ -5,7 +5,7 @@ import { adminAccount } from '../common/config'
 const routes: Array<RouteRecordRaw> = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: () => import('../views/Login.vue') },
-  { path: '/signin/:id', component: () => import('../views/Signin.vue') },
+  { path: '/signin/:subjectID/:subject', component: () => import('../views/Signin.vue') },
   { 
     path: '/main', 
     component: () => import('../views/Main.vue'),

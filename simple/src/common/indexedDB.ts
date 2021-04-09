@@ -13,8 +13,9 @@ export interface PersonInfos {		//
 	created: string,							//创建时间
 }
 
+import { adminAccount } from './config'
 
-const request = indexedDB.open("signature");
+const request = indexedDB.open(adminAccount.value);
 
 // export let ownerIndex: IDBIndex,
 // 		titleIndex: IDBIndex,
@@ -30,10 +31,10 @@ request.onupgradeneeded = function() {
   // sujectTitleID =subjectStore.createIndex("by_titleID", "titleID");
   subjectStore.createIndex("by_created", "created");
 
-	const personInfoStore = db.createObjectStore("PersonInfo", { keyPath: 'subjectID' });
+	const personInfoStore = db.createObjectStore("PersonInfo", { autoIncrement: true });
   personInfoStore.createIndex("by_person", "person");
   personInfoStore.createIndex("by_signature", "signature");
-  // signatureTitleID = signatureStore.createIndex("by_titleID", "titleID", { unique: true });
+  personInfoStore.createIndex("by_subjectID", "subjectID");
   personInfoStore.createIndex("by_created", "created");
 };
 

@@ -20,7 +20,7 @@
 		>
 
 			<div class="show-title">
-				<span>标题: </span>
+				<span>主题: </span>
 				<span class="convansation-title">{{ subject }} </span>
 				<button @click="state.isCreateSubject = true">修改</button>
 			</div>
@@ -63,13 +63,16 @@ import { useRoute, useRouter } from 'vue-router'
 
 import QRcode from '../components/QRcode.vue'
 
-import { subjectID, 
-				 adminAccount, 
-				 wifiAccount, 
-				 wifiPasswd,
+import { adminAccount, 
 				 str_encrypt } from '../common/config'
 
-import request, { Subjects } from '../common/indexedDB'
+import wsServer, { memberURL } from '../common/ws'
+
+import request, { Subjects, PersonInfos } from '../common/indexedDB'
+
+import { useStore, PersonState } from '../store'
+
+
 
 export default defineComponent({
   name: 'Create',
@@ -77,6 +80,9 @@ export default defineComponent({
 		QRcode
   },
 	setup(){
+		const router = useRouter()
+		const store = useStore()
+
 		const state = reactive({
 			isCreateSubject: true,
 		})
@@ -86,61 +92,90 @@ export default defineComponent({
 			passwd: ''
 		})
 
-		const router = useRouter()
 
 		const subject = ref('')
 
 		//indexedDB
-		let db: IDBDatabase
-		request.onsuccess = function() {
-  		db = request.result
-			console.log('链接数据库成功');
-			
-		}
+		// let db: IDBDatabase,
+		// 		subjectTx: IDBTransaction,
+		// 		personInfoTx: IDBTransaction,
+		// 		subjectStore: IDBObjectStore,
+		// 		personInfoStore: IDBObjectStore
+
+		// request.onsuccess = function() {
+  	// 	db = request.result
+		// }
 
 		
 
 		//新建标题
 		const subjectBtn = () => {
 			if(subject.value === ''){
-				alert('标题不能为空')
+				alert('主题不能为空')
 				return
 			}
 
-			const tx = db.transaction("Subject", "readwrite");
-			const indexedDBStore = tx.objectStore("Subject");
-
 			const data: Subjects = {
 				subject: subject.value,
-				subjectID: subjectID.value,			//id为唯一值，不点击新建签到不会刷新
+				subjectID: store.state.subjectID,			//id为唯一值，不点击新建签到不会刷新
 				created: new Date().toLocaleString(),
 				owner: adminAccount.value
 			}
 
-			indexedDBStore.put(data)
+			const subjectTx = store.state.indexedDB.transaction("Subject", "readwrite");
+			const subjectStore = subjectTx.objectStore("Subject")
+			subjectStore.put(data)
 			
 			state.isCreateSubject = false
 		}
 
+		//创建或修改主题
 		const createSuject = (e: KeyboardEvent) => {
 			subject.value = (e.target as HTMLInputElement).value
 		}
 
-
+		//显示已签到人员
 		const goSignature = () => {
 			router.push('/main/show')
 		}
 
 
-		
+		//生成二维码链接
 		let qrcodePageUrl = ref('')
-		const origin = window.location.origin + '/signin/'
+		const origin = window.location.origin + '/signin/' + store.state.subjectID + '/'
 		watch(() => subject.value, () => {
 			qrcodePageUrl.value = origin + str_encrypt(subject.value)
-			console.log(qrcodePageUrl.value);
+			console.log(subject.value);
+			console.log(str_encrypt(subject.value));
+			
+			console.log(qrcodePageUrl.value)
 		})
 	
-		
+
+		//创建ws服务
+		const ws = wsServer(memberURL)
+		const data = reactive<Array<PersonState>>([]) 
+
+		ws.onmessage = (e) => {
+      const newData = JSON.parse(e.data)
+      
+      for(let i = 0, len = data.length; i < len; i++){
+        if(data[i].personID === newData.personID || data[i].person === newData.person){
+          data[i] = newData
+					store.commit('setPersons', data)
+          return
+        }
+      }
+      data.push(newData)
+			console.log(store.state.subjectID);
+			
+			const personInfoTx = store.state.indexedDB.transaction("PersonInfo", "readwrite")
+			const	personInfoStore = personInfoTx.objectStore("PersonInfo")
+			personInfoStore.put(newData)
+
+			store.commit('setPersons', data)
+    }
+
 
 		
 
