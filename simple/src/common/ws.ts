@@ -1,5 +1,7 @@
-export const commitURL = 'ws://192.168.1.100:8080/commit'
-export const memberURL = 'ws://192.168.1.100:8080/member'
+const baseUrl = 'ws://' + window.location.hostname + ':8080'
+
+export const commitURL = baseUrl + '/commit'
+export const memberURL = baseUrl + '/member'
 
 
 const wsServer = (url: string) => {

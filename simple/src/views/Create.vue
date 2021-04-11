@@ -63,8 +63,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import QRcode from '../components/QRcode.vue'
 
-import { adminAccount, 
-				 str_encrypt } from '../common/config'
+import { adminAccount, str_encrypt } from '../common/config'
 
 import wsServer, { memberURL } from '../common/ws'
 
@@ -145,10 +144,6 @@ export default defineComponent({
 		const origin = window.location.origin + '/signin/' + store.state.subjectID + '/'
 		watch(() => subject.value, () => {
 			qrcodePageUrl.value = origin + str_encrypt(subject.value)
-			console.log(subject.value);
-			console.log(str_encrypt(subject.value));
-			
-			console.log(qrcodePageUrl.value)
 		})
 	
 
@@ -158,21 +153,39 @@ export default defineComponent({
 
 		ws.onmessage = (e) => {
       const newData = JSON.parse(e.data)
-      
+      const personInfoTx = store.state.indexedDB.transaction("PersonInfo", "readwrite")
+			const personInfoStore = personInfoTx.objectStore("PersonInfo")
+			
+			if(newData.subjectID != store.state.subjectID){
+				return
+			}
+
       for(let i = 0, len = data.length; i < len; i++){
-        if(data[i].personID === newData.personID || data[i].person === newData.person){
-          data[i] = newData
+				if(data[i].personID === newData.personID || data[i].person === newData.person){
+					data[i] = newData
+					const personInfoIndex = personInfoStore.index('by_personID')
+					const request = personInfoIndex.openCursor(IDBKeyRange.only(newData.personID));
+					request.onsuccess = function() {
+						const cursor = request.result;
+						if (cursor) {
+								
+							cursor.update(newData)
+														
+							cursor.continue();
+						} else {
+							// No more matching records.
+													
+						}
+					}
+
+
 					store.commit('setPersons', data)
           return
         }
       }
       data.push(newData)
-			console.log(store.state.subjectID);
 			
-			const personInfoTx = store.state.indexedDB.transaction("PersonInfo", "readwrite")
-			const	personInfoStore = personInfoTx.objectStore("PersonInfo")
 			personInfoStore.put(newData)
-
 			store.commit('setPersons', data)
     }
 

@@ -64,6 +64,7 @@ export default defineComponent({
 
 		const create = () => {
 			store.commit('setSubjectID', uid())
+			
 			router.push('/main/create')
 		}
 

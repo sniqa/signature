@@ -1,7 +1,7 @@
 <template>
   <div class="checkedin-content">
     <p class="person">{{ title }}</p>
-			<img :src="signature" alt="" class="signature">
+		<img :src="signature" alt="" class="signature">
   </div>
 </template>
 

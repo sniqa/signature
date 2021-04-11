@@ -33,6 +33,7 @@ request.onupgradeneeded = function() {
 
 	const personInfoStore = db.createObjectStore("PersonInfo", { autoIncrement: true });
   personInfoStore.createIndex("by_person", "person");
+  personInfoStore.createIndex("by_personID", "personID");
   personInfoStore.createIndex("by_signature", "signature");
   personInfoStore.createIndex("by_subjectID", "subjectID");
   personInfoStore.createIndex("by_created", "created");

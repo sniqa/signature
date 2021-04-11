@@ -48,6 +48,9 @@ export default defineComponent({
 		const router = useRoute()
 		 
 		const subjectID = (router.params.subjectID as string)
+
+		console.log(subjectID);
+		
 		
 		const subject = ref(str_decrypt((router.params.subject as string))) 
 		
