@@ -23,7 +23,7 @@
 </template>
 
 <script lang='ts'>
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, onUnmounted, ref } from 'vue'
 
 import { useRoute } from 'vue-router'
 
@@ -51,7 +51,6 @@ export default defineComponent({
 
 		console.log(subjectID);
 		
-		
 		const subject = ref(str_decrypt((router.params.subject as string))) 
 		
 		const personID = uid()		//生成唯一id，在不关闭网页的时候可使用该id来修改
@@ -64,6 +63,27 @@ export default defineComponent({
 
 		//创建websocket客户端
 		const ws = wsServer(commitURL)
+
+		onUnmounted(() => {
+			ws.close()
+		})
+
+		ws.onmessage = function (e) {
+			switch(e.data) {
+				case 'success' :
+					alert('签到成功')
+					break
+				case 'failure' :
+					alert('签到失败')
+					break
+				case 'expired' :
+					alert('已过期，请重新扫描二维码')
+					break
+				default :
+
+			}
+
+		}
 
 		//将Signature组件的canvasReset方法提取出来给父组件使用
 		let resetFn: () => void		
@@ -100,7 +120,6 @@ export default defineComponent({
 			}
 
 			ws.send(JSON.stringify(data))
-			alert('签到成功')
 		}
 
 		return { canvasReset, canvasCommit, reset, commit, onChange, subject }

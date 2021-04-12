@@ -5,6 +5,7 @@
  			<p class="created">{{ created }}</p>
 		</div>
     <div class="downbtn"></div>
+    <div class="delbtn" @click="del">删除</div>
   </div>
 </template>
 
@@ -19,12 +20,17 @@ export default defineComponent({
 		subject: String,
 		created: String
 	},
-	emits: ['onClick'],
+	emits: ['onClick', 'onDel'],
 	setup(props, ctx){
 		const onClick = () => {
 			ctx.emit('onClick')
 		}
-		return { onClick }
+
+		const del = (e) => {
+			e.stopPropagation()
+			ctx.emit('onDel')
+		}
+		return { onClick, del }
 	}
 })
 </script>
@@ -40,14 +46,15 @@ export default defineComponent({
 	justify-content: space-between;
 	align-items: center;
 	cursor: pointer;
-	margin: 2px;
+	margin: 5px;
+	padding: 0 20px;
+	box-sizing: border-box;
 }
 .subject-list-show {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	flex-grow: 1;
-	padding-left: 20px;
 }
 .subject-list-show >p:nth-child(1) {
 	font-weight: bold;
@@ -70,5 +77,9 @@ export default defineComponent({
 	border-right: 5px solid transparent;
 	border-left: 5px solid transparent;
 	border-top: 5px solid #aaa;
+}
+.subject-list > .delbtn {
+	color: var(--primary);
+	cursor: pointer;
 }
 </style>

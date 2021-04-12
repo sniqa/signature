@@ -22,12 +22,6 @@
 			</div>	
 		</header>
 
-		<!-- <main class="main-page-main">
-			<keep-alive>
-				<router-view></router-view>
-			</keep-alive>
-		</main> -->
-
 		<main class="main-page-main">
 			<router-view v-slot="{ Component }">
 				<keep-alive>
@@ -42,11 +36,11 @@
 import { defineComponent, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { useStore } from '../store'
-
 import { adminAccount } from '../common/config'
 
-import { uid } from '../common/utils'
+import request from '../common/indexedDB'
+
+import { useStore } from '../store'
 
 export default defineComponent({
   name: 'Main',
@@ -55,6 +49,7 @@ export default defineComponent({
 	setup(){
 
 		const router = useRouter()
+
 		const store = useStore()
 
 		const state = reactive({
@@ -62,9 +57,16 @@ export default defineComponent({
 			isHistory: false
 		})
 
+		 //indexedDB
+      request.onsuccess = function() {
+        const db = request.result
+        store.commit('setIndexedDB', db)
+        console.log('链接数据库成功');
+        
+      }
+
+
 		const create = () => {
-			store.commit('setSubjectID', uid())
-			
 			router.push('/main/create')
 		}
 

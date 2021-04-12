@@ -2,6 +2,9 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 import { adminAccount } from '../common/config'
 
+import { signinQRcode } from '../common/config'
+
+
 const routes: Array<RouteRecordRaw> = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: () => import('../views/Login.vue') },
@@ -34,8 +37,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  
+
   if (to.path.includes('/signin')) {
+    // router.push(signinQRcode.value)
     next()
     return
   }

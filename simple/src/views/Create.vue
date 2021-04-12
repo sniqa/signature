@@ -1,18 +1,40 @@
 <template>
   <div class="create-page">
 
-		<!-- 写入标题 -->
+		<!-- 初始化主题和WiFi -->
 		<section class="create-page-operate"
 			v-if="state.isCreateSubject"
 		>
-			<input type="text" name="" id=""
-				:value="subject"
-				@change="createSuject"
-				placeholder="点击添加主题"
-			>
 
-			<button @click="subjectBtn">确定</button>
+			<!-- 写入标题 -->
+			<div class="create-page-subject">
+				<input type="text" name="" id=""
+					:value="subject"
+					@change="createSuject"
+					placeholder="点击添加主题"
+				>
+
+				<button @click="subjectBtn">确定</button>
+			</div>
+
+			<!-- 默认WIFI -->
+			<div class="create-paga-wifi">
+
+				<h3>局域网WiFi</h3>
+
+				<div class="create-paga-wifi-account">
+					<label for="wifiac">WiFi账号：</label>
+					<input type="text" id="wifiac" @change="wifiac" :value="wifi.account">
+				</div>
+				
+				<div class="create-paga-wifi-passwd">
+					<label for="wifipwd">WiFi密码：</label>
+					<input type="text" id="wifipwd" @change="wifipwd" :value="wifi.passwd">
+				</div>
+				
+			</div>
 		</section>
+
 
 		<!-- 显示二维码 -->
 		<section class="create-page-show"
@@ -27,14 +49,13 @@
 			
 			<div class="show-qrcode">
 				<div class="show-qrcode-wifi">
-					<h2>第一步: &nbsp;&nbsp;&nbsp;加入局域网WIFI</h2>
+					<h2>第一步: &nbsp;&nbsp;&nbsp;加入局域网</h2>
 					<QRcode 
 						:size="500"
-						msg="hello"
+						:msg="wifiQRcode"
 					></QRcode>
 
-					<h2>或者</h2>
-					<h3>搜索WiFi加入:</h3>
+					<h2>或者搜索WiFi加入:</h2>
 					<p>WiFi账号：{{ wifi.account }}</p>
 					<p>WiFi密码：{{ wifi.passwd }}</p>
 				</div>
@@ -43,7 +64,7 @@
 					<h2>第二步:&nbsp;&nbsp;&nbsp;进行签到</h2>
 					<QRcode 
 						:size="500"
-						:msg="qrcodePageUrl"
+						:msg="signinQRcode"
 					></QRcode>
 
 					<div class="show-signature-btn">
@@ -58,20 +79,20 @@
 </template>
 
 <script lang='ts'>
-import { computed, defineComponent, reactive, Ref, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, defineComponent, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import QRcode from '../components/QRcode.vue'
 
-import { adminAccount, str_encrypt } from '../common/config'
+import { adminAccount, signinQRcode, str_encrypt } from '../common/config'
 
 import wsServer, { memberURL } from '../common/ws'
 
-import request, { Subjects, PersonInfos } from '../common/indexedDB'
+import { Subjects } from '../common/indexedDB'
 
 import { useStore, PersonState } from '../store'
 
-
+import { uid } from '../common/utils'
 
 export default defineComponent({
   name: 'Create',
@@ -79,50 +100,63 @@ export default defineComponent({
 		QRcode
   },
 	setup(){
+		//创建ws服务
+		const ws = wsServer(memberURL)
+
 		const router = useRouter()
 		const store = useStore()
 
 		const state = reactive({
 			isCreateSubject: true,
 		})
+		
 
 		const wifi = reactive({
-			account: '',
-			passwd: ''
+			account: window.localStorage.getItem(adminAccount.value + '.wifiac'),
+			passwd: window.localStorage.getItem(adminAccount.value + '.wifipwd')
 		})
 
+		//存储ws接收到的数据
+		const personData = reactive<Array<PersonState>>([]) 
+
+		const origin = window.location.origin + '/signin/'
 
 		const subject = ref('')
 
-		//indexedDB
-		// let db: IDBDatabase,
-		// 		subjectTx: IDBTransaction,
-		// 		personInfoTx: IDBTransaction,
-		// 		subjectStore: IDBObjectStore,
-		// 		personInfoStore: IDBObjectStore
-
-		// request.onsuccess = function() {
-  	// 	db = request.result
-		// }
-
-		
-
-		//新建标题
+		//新建主题
 		const subjectBtn = () => {
+
 			if(subject.value === ''){
 				alert('主题不能为空')
 				return
 			}
+			store.commit('setSubjectID', uid()) //创建当前主题的唯一id
 
+			//重置已有的签到
+			personData.length = 0
+			store.commit('setPersons', [])
+
+			// ws.onopen = function () {
+				ws.send(JSON.stringify({
+					subject: subject.value,
+					subjectID: store.state.subjectID
+				}))
+			// }
+		
+
+			//生成二维码链接
+			signinQRcode.value = origin + store.state.subjectID + '/' + str_encrypt(subject.value)
+			
 			const data: Subjects = {
 				subject: subject.value,
-				subjectID: store.state.subjectID,			//id为唯一值，不点击新建签到不会刷新
+				subjectID: store.state.subjectID,			//id为唯一值，没有修改主题不会刷新
 				created: new Date().toLocaleString(),
 				owner: adminAccount.value
 			}
 
 			const subjectTx = store.state.indexedDB.transaction("Subject", "readwrite");
 			const subjectStore = subjectTx.objectStore("Subject")
+			
 			subjectStore.put(data)
 			
 			state.isCreateSubject = false
@@ -139,18 +173,6 @@ export default defineComponent({
 		}
 
 
-		//生成二维码链接
-		let qrcodePageUrl = ref('')
-		const origin = window.location.origin + '/signin/' + store.state.subjectID + '/'
-		watch(() => subject.value, () => {
-			qrcodePageUrl.value = origin + str_encrypt(subject.value)
-		})
-	
-
-		//创建ws服务
-		const ws = wsServer(memberURL)
-		const data = reactive<Array<PersonState>>([]) 
-
 		ws.onmessage = (e) => {
       const newData = JSON.parse(e.data)
       const personInfoTx = store.state.indexedDB.transaction("PersonInfo", "readwrite")
@@ -160,9 +182,9 @@ export default defineComponent({
 				return
 			}
 
-      for(let i = 0, len = data.length; i < len; i++){
-				if(data[i].personID === newData.personID || data[i].person === newData.person){
-					data[i] = newData
+      for(let i = 0, len = personData.length; i < len; i++){
+				if(personData[i].personID === newData.personID || personData[i].person === newData.person){
+					personData[i] = newData
 					const personInfoIndex = personInfoStore.index('by_personID')
 					const request = personInfoIndex.openCursor(IDBKeyRange.only(newData.personID));
 					request.onsuccess = function() {
@@ -178,21 +200,29 @@ export default defineComponent({
 						}
 					}
 
-
-					store.commit('setPersons', data)
+					store.commit('setPersons', personData)
           return
         }
       }
-      data.push(newData)
+      personData.push(newData)
 			
 			personInfoStore.put(newData)
-			store.commit('setPersons', data)
+			store.commit('setPersons', personData)
     }
 
-
+		function wifiac(e: KeyboardEvent) {
+			wifi.account = (e.target as HTMLInputElement).value
+			window.localStorage.setItem(adminAccount.value + '.wifiac', wifi.account)
+		}
+		function wifipwd(e: KeyboardEvent) {
+			wifi.passwd = (e.target as HTMLInputElement).value
+			window.localStorage.setItem(adminAccount.value + '.wifipwd', wifi.passwd)
+		}
 		
+		const wifiQRcode = computed(() => `WIFI:T:WPA;S:${wifi.account};P:${wifi.passwd};;` )
 
-		return  { state, subjectBtn, createSuject, wifi, goSignature, qrcodePageUrl, subject }
+
+		return  { state, subjectBtn, createSuject, wifi, goSignature, signinQRcode, subject, wifiac, wifipwd, wifiQRcode }
 	}
 
 
@@ -207,6 +237,15 @@ export default defineComponent({
 }
 
 .create-page-operate {
+	flex-grow: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.create-page-subject {
+	width: 100%;
 	margin-top: 120px;
 	height: 100px;
 	display: flex;
@@ -215,7 +254,7 @@ export default defineComponent({
 	box-sizing: border-box;
 	padding: 0 20px;
 }
-.create-page-operate > input {
+.create-page-subject > input {
 	height: 80%;
 	flex-grow: 1;
 	outline: none;
@@ -223,7 +262,7 @@ export default defineComponent({
 	text-align: center;
 	border: 1px dotted #000;
 }
-.create-page-operate > button {
+.create-page-subject > button {
 	margin-left: 20px;
 	width: 100px;
 	height: 80%;
@@ -273,6 +312,9 @@ export default defineComponent({
 	line-height: 1.5em;
 	box-sizing: border-box;
 	font-weight: bold;
+}
+.show-qrcode-wifi > p {
+	font-size: 2em;
 }
 .show-title > span:nth-child(1) {
 	font-size: 18px;
@@ -329,5 +371,32 @@ export default defineComponent({
 	box-sizing: border-box;
 	cursor: pointer;
 	border-radius: 5px;
+}
+
+.create-paga-wifi {
+	flex-grow: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+.create-paga-wifi label {
+	color: var(--primary);
+}
+.create-paga-wifi input {
+	outline: none;
+	border: 0;
+	border-bottom: 1px solid var(--primary);
+	color: var(--primary);
+	text-align: center;
+	font-size: 1em;
+}
+
+.create-paga-wifi > div {
+	margin: 10px;
+}
+.create-paga-wifi > h3 {
+	color: var(--primary);
+	margin: 20px;
 }
 </style>

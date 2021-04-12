@@ -25,10 +25,10 @@ const request = indexedDB.open(adminAccount.value);
 request.onupgradeneeded = function() {
   // The database did not previously exist, so create object stores and indexes.
   const db = request.result;
-  const subjectStore = db.createObjectStore("Subject", { keyPath: 'subjectID' });
+  const subjectStore = db.createObjectStore("Subject", { autoIncrement: true });
   subjectStore.createIndex("by_owner", "owner");
-  subjectStore.createIndex("by_subject", "subject", { unique: true });
-  // sujectTitleID =subjectStore.createIndex("by_titleID", "titleID");
+  subjectStore.createIndex("by_subjectID", "subjectID", { unique: true });
+  subjectStore.createIndex("by_subject", "subject");
   subjectStore.createIndex("by_created", "created");
 
 	const personInfoStore = db.createObjectStore("PersonInfo", { autoIncrement: true });

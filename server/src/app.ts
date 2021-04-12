@@ -7,14 +7,18 @@ const memberWSS = new webSocket.Server({ noServer: true })  //
 
 const commitWSS = new webSocket.Server({ noServer: true });
 
+let subjectID: string = ''
+
 memberWSS.on('connection', function connection(ws) {
 	
 	ws.on('message', (data) => {
-		ws.send(data)
+		
+		subjectID = JSON.parse(data as string).subjectID
+		console.log(subjectID)
+		
 	}) 
  
 	memberWSS.on('signin', (data) => {
-		
 		ws.send(data)
 	})
 });
@@ -23,9 +27,15 @@ memberWSS.on('connection', function connection(ws) {
 
 commitWSS.on('connection', function connection(ws) {
   ws.on('message', (data) => {
-		
-		memberWSS.emit('signin', data)
-		ws.send('succeed')
+		const objData = JSON.parse(data as string)
+		if (objData.subjectID === subjectID) {
+			memberWSS.emit('signin', data)
+			ws.send('success')
+			return
+		} else {
+			ws.send('expired')
+		}
+		ws.send('failure')
 	})
 });
 

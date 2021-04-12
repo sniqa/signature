@@ -20,7 +20,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import Button from '../components/Button.vue'
@@ -40,6 +40,11 @@ export default defineComponent({
 		const router = useRouter()
 
     const store = useStore()
+
+    watch(() => store.state.persons, () => {
+      console.log(store.state.persons);
+      
+    })
 
     const returnCreate = () => {
 			router.push('/main/create')

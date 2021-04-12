@@ -12,7 +12,7 @@ const wsServer = (url: string) => {
   	console.log('ws server close');
 	}
 
-	ws.onerror = () => console.log('ws server error')
+	ws.onerror = () => alert('连接服务器失败，请刷新重试或检查服务器设置')
 
 	ws.onopen = () => {
 		console.log('ws server open')
